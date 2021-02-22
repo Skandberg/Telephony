@@ -1,0 +1,21 @@
+import gost_crypto
+
+def encryptmessage, key():
+    #Здесь вводим строку
+    print("enter message to encrypt")
+    message=input()
+    #Здесь вводим число
+    print("Enter key")
+    key=input()
+    key=int(key)
+    encryptor = gost_crypto.Crypt(key)
+    list_of_chars= [char for char in message] 
+    encrypted_list_of_chars=[]
+
+    for i in list_of_chars:
+
+
+        encrypted_list_of_chars.append(str(encryptor.encrypt_i64(ord(i))))
+    encrypted_message=''.join(encrypted_list_of_chars)
+    return encrypted_message
+
