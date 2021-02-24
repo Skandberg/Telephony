@@ -43,23 +43,37 @@ import aiohttp
 import asyncio 
 import time
  
-print("Enter url")
-url= input()
-async def getapge(session, url):
-	async with session.get(url,timeout=5) as resp: 
-		print(await resp.text()) 
-async def main(): 
-	async with aiohttp.ClientSession() as session: 
-		await getapge(session, url) 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
+print("Enter address")
+address= input()
+
+async def tcp_echo_client(address, key):
+    reader, writer = await asyncio.open_connection(
+        address, 8888)
+
+    print(f'Send: {key!r}')
+    writer.write(key.encode())
+    await writer.drain()
+
+    data = await reader.read(100)
+    print(f'Received: {data.decode()!r}')
+
+    print('Close the connection')
+    writer.close()
+    await writer.wait_closed()
+ 
+""" 
 start = time.time()
  
 loop = asyncio.get_event_loop()
-loop.run_until_complplete(main()) 
+loop.run_until_complete(main()) 
 end = time.time() 
 
 print ('time: {}' .format(end - start))
+"""
+print("Enter address")
+address=input()
 
+asyncio.run(tcp_echo_client(address,'3' ))
 def startup():
 	print("1> start")
 	print("2> exit")
