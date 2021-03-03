@@ -38,28 +38,11 @@ class Handler(FileSystemEventHandler):
 """
 from pycall import CallFile, Call, Application
 import  encrypt
-
-import aiohttp
-import asyncio 
+import pyrtp.pyrtp as pyrtp
+import random
+import socket
 import time
- 
-print("Enter address")
-address= input()
 
-async def tcp_echo_client(address, key):
-    reader, writer = await asyncio.open_connection(
-        address, 8888)
-
-    print(f'Send: {key!r}')
-    writer.write(key.encode())
-    await writer.drain()
-
-    data = await reader.read(100)
-    print(f'Received: {data.decode()!r}')
-
-    print('Close the connection')
-    writer.close()
-    await writer.wait_closed()
  
 """ 
 start = time.time()
@@ -70,54 +53,55 @@ end = time.time()
 
 print ('time: {}' .format(end - start))
 """
-print("Enter address")
-address=input()
 
-asyncio.run(tcp_echo_client(address,'3' ))
-def startup():
-	print("1> start")
-	print("2> exit")
-	n=input()
-	if n== '1':
-		main_menu()
-	elif n == '2':
-		return
-	else:
-		print("please enter valid variant")
-def main_menu():
-	print("1> call")
-	print("2> listen")
-	print("3> configure")
-	n=input()
-	if n=='1':
-		call()
-#	else if n == '2':
-#		listen()
-	#else if n == '3':
-	else:
-                print("please enter valid variant")
 def call():
-	print("Enter phone number")
-	phone_number=input()
-	call = Call('SIP/flowroute/'+phone_number)
-	
-	print("Type your message")
-	message = input()
-	print("Write your key")	
-	key =int(input())	
-	action = Application('Playback', encrypt.encrypt(message, key))
+    print("Enter phone number")
+    phone_number=input()
+    call = Call('SIP/flowroute/'+phone_number)	
+    print("Type your message")
+    message = input()
+    print("Write your key")	
+    key =int(input())
+   
+    
+    action = Application('Playback', encrypt.encrypt(message, key))
 
-	c = CallFile(call, action, spool_dir='calls')
-	c.spool()
+    c = CallFile(call, action, spool_dir='calls')
+    c.spool()
+
+    
+def transfer(content):
+    lowest_port = 16384         #Both these values must be even
+    max_port = 32766            #Even this one... Trust me.
+    destination = "1.2.3.4"
+    packets = 3
+    packetization = 150         
+
+    port = (random.randint(lowest_port/2,max_port/2)*2)       #Selects our RTP port by picking a random number between half the highest port value and half the lowest, and multiplying it by 2 to always get an even number
+    print("Selected Port is: " + str(port))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+    print("Enter destination: ")
+    sock.bind((input(), 1447))
 
 
-while True:
-	startup()	
-"""
-call = Call('SIP/flowroute/18882223333')
+    #sequence_number = random.randint(1,9999)
+    sequence_number = 54321
+    #time_int = random.randint(1,9999)
+    time_int = 12345
 
-action = Application('Playback', 'hello-world')
+    while packets != 0:
 
-c = CallFile(call, action, spool_dir='calls')
-c.spool()
-"""
+
+        packets = packets - 1
+        time_int = time_int + 1
+        sequence_number = sequence_number + 1
+        payload=content
+        #payload = 'd5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5'
+        packet_vars = {'version' : 2, 'padding' : 0, 'extension' : 0, 'csi_count' : 0, 'marker' : 0, 'payload_type' : 8, 'sequence_number' : sequence_number, 'timestamp' : time_int, 'ssrc' : 185755418, 'payload' : payload}
+
+        header_hex = pyrtp.GenerateRTPpacket(packet_vars)
+        
+        sock.sendto(bytes.fromhex(header_hex), (destination, port))
+        
+        time.sleep(float(packetization * 0.0001))
+    sock.close()
