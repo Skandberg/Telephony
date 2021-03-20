@@ -62,12 +62,14 @@ def call():
     message = input()
     print("Write your key")	
     key =int(input())
+    return encrypt.encrypt(message, key)
    
-    
+    """
     action = Application('Playback', encrypt.encrypt(message, key))
 
     c = CallFile(call, action, spool_dir='calls')
     c.spool()
+    """
 
     
 def transfer(content):

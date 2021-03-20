@@ -7,6 +7,7 @@ import socket
 import time
 
 def transition():
+    """
     client.call()
 
 
@@ -18,7 +19,7 @@ def transition():
             asterisk+=str(binascii.hexlify(chunk)).replace("b","").replace("'","")
 
     print(asterisk) #hexdump
-
+"""
 
 
 
@@ -46,7 +47,7 @@ def transition():
         packets = packets - 1
         time_int = time_int + 1
         sequence_number = sequence_number + 1
-        payload = asterisk
+        payload = ':'.join("{:02x}".format(ord(c)) for c in client.call())
         packet_vars = {'version' : 2, 'padding' : 0, 'extension' : 0, 'csi_count' : 0, 'marker' : 0, 'payload_type' : 8, 'sequence_number' : sequence_number, 'timestamp' : time_int, 'ssrc' : 185755418, 'payload' : payload}
 
         header_hex = rtp.GenerateRTPpacket(packet_vars)

@@ -16,6 +16,12 @@ sel.register(lsock, selectors.EVENT_READ, data=None)
 
 while True:
     events = sel.select(timeout=None)
+    data = conn.recv(1024)
+    if not data: break
+    action = Application('Playback', data)
+
+    c = CallFile(call, action, spool_dir='calls')
+    c.spool()
     for key, mask in events:
         if key.data is None:
             accept_wrapper(key.fileobj)
